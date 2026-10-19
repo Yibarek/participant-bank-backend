@@ -3,6 +3,7 @@ package org.multimedia;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.multimedia.dto.LoginRequest;
 import org.multimedia.dto.ParticipantBankDto;
 import org.multimedia.model.ParticipantBank;
@@ -12,13 +13,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -42,10 +52,27 @@ public class ParticipantBankControllerTest {
     @MockBean
     private JwtDecoder jwtDecoder;
 
+    @MockBean
+    private RestTemplate restTemplate;
+
     @BeforeEach
     public void setUp() {
         participantBankRepository.deleteAll();
         userRepository.deleteAll();
+
+        Map<String, Object> keycloakResponse = new HashMap<>();
+        keycloakResponse.put("access_token", "test_keycloak_jwt_token");
+        keycloakResponse.put("refresh_token", "test_keycloak_refresh_token");
+        keycloakResponse.put("token_type", "Bearer");
+        keycloakResponse.put("expires_in", 300);
+        keycloakResponse.put("refresh_expires_in", 1800);
+        keycloakResponse.put("scope", "openid profile email");
+
+        Mockito.when(restTemplate.postForEntity(
+                anyString(),
+                org.mockito.ArgumentMatchers.any(HttpEntity.class),
+                eq(Map.class)
+        )).thenReturn(ResponseEntity.ok(keycloakResponse));
     }
 
     @Test
@@ -61,8 +88,29 @@ public class ParticipantBankControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.access_token", notNullValue()))
+                .andExpect(jsonPath("$.access_token", is("test_keycloak_jwt_token")))
                 .andExpect(jsonPath("$.token_type", is("Bearer")));
+    }
+
+    @Test
+    public void testLoginFailsWhenKeycloakFailsWithoutFallback() throws Exception {
+        Mockito.when(restTemplate.postForEntity(
+                anyString(),
+                org.mockito.ArgumentMatchers.any(HttpEntity.class),
+                eq(Map.class)
+        )).thenThrow(new RestClientException("Connection refused to authentication server"));
+
+        LoginRequest loginRequest = LoginRequest.builder()
+                .username("admin")
+                .password("Password@123")
+                .grant_type("password")
+                .client_id("participant-portal")
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
