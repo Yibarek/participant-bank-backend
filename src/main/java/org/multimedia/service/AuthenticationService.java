@@ -12,11 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,7 +26,7 @@ import java.util.Optional;
 public class AuthenticationService {
 
     private final UserRepository userRepository;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     @Value("${app.auth.static-username:admin}")
     private String staticUsername;
@@ -99,6 +99,7 @@ public class AuthenticationService {
 
     /**
      * Requests tokens from Keycloak token endpoint.
+     * No fallback mock data is returned; errors are propagated directly.
      */
     private TokenResponseDto requestKeycloakToken(LoginRequest loginRequest) {
         String tokenUrl = keycloakIssuerUri + "/protocol/openid-connect/token";
@@ -141,29 +142,15 @@ public class AuthenticationService {
                         .scope(scope)
                         .build();
             }
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Failed to obtain token from authentication server");
+        } catch (HttpStatusCodeException ex) {
+            log.error("Keycloak authentication server returned error: {} - {}", ex.getStatusCode(), ex.getResponseBodyAsString());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication server rejected credentials: " + ex.getStatusText());
+        } catch (ResponseStatusException ex) {
+            throw ex;
         } catch (Exception ex) {
-            log.warn("Keycloak token request returned error or is unreachable: {}. Providing fallback mock JWT token for development.", ex.getMessage());
+            log.error("Failed to connect to Keycloak authentication server: {}", ex.getMessage());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication server unreachable: " + ex.getMessage());
         }
-
-        // Graceful development fallback token so frontend is never blocked
-        return generateMockDevelopmentToken(loginRequest.getUsername());
-    }
-
-    private TokenResponseDto generateMockDevelopmentToken(String username) {
-        String header = Base64.getUrlEncoder().withoutPadding().encodeToString("{\"alg\":\"HS256\",\"typ\":\"JWT\"}".getBytes());
-        String payload = Base64.getUrlEncoder().withoutPadding().encodeToString(
-                String.format("{\"sub\":\"1\",\"preferred_username\":\"%s\",\"roles\":[\"admin\"],\"iss\":\"%s\"}",
-                        username, keycloakIssuerUri).getBytes()
-        );
-        String mockAccessToken = header + "." + payload + ".mock_dev_signature_for_testing";
-
-        return TokenResponseDto.builder()
-                .accessToken(mockAccessToken)
-                .refreshToken("mock_refresh_token_" + System.currentTimeMillis())
-                .tokenType("Bearer")
-                .expiresIn(300)
-                .refreshExpiresIn(1800)
-                .scope("openid profile email")
-                .build();
     }
 }
