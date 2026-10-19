@@ -26,7 +26,7 @@ public class SecurityConfig {
     public CommandLineRunner debugConfig(org.springframework.core.env.Environment env) {
         return args -> {
             logger.info("=================================================================");
-            logger.info("Branch: branch1-no-auth-no-logo (No accessToken required)");
+            logger.info("Branch: branch2-no-auth-with-logo (No accessToken required, Logo Support Enabled)");
             logger.info("Active Profile: {}", (Object) env.getActiveProfiles());
             logger.info("=================================================================");
         };
@@ -34,7 +34,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        logger.info("Configuring SecurityFilterChain for branch1-no-auth-no-logo: all endpoints permitted without accessToken");
+        logger.info("Configuring SecurityFilterChain for branch2-no-auth-with-logo: all endpoints permitted without accessToken, logos enabled");
 
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))

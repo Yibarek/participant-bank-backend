@@ -14,16 +14,16 @@ public class OpenApiConfig {
     public OpenAPI participantOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Participant Bank Management API (branch1-no-auth-no-logo)")
+                        .title("Participant Bank Management API (branch2-no-auth-with-logo)")
                         .description("""
                                 REST API for Participant Bank Management and Authentication.
                                 
-                                Branch: `branch1-no-auth-no-logo`
+                                Branch: `branch2-no-auth-with-logo`
                                 - No accessToken is required to test or call any endpoint.
-                                - Logo upload is not required for participant bank CRUD.
+                                - Full Logo Management Enabled: Upload logos via `POST /api/v1/participants/{id}/logo` and retrieve via `/uploads/logos/{filename}`.
                                 - Login endpoint authenticates against static credentials, logs into Keycloak, and synchronizes the user to PostgreSQL.
                                 """)
-                        .version("1.0.0-branch1")
+                        .version("1.0.0-branch2")
                         .contact(new Contact()
                                 .name("EthSwitch Multimedia Team")
                                 .url("https://epg.ethswitch.et"))

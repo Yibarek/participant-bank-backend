@@ -18,6 +18,7 @@ import java.util.List;
 public class ParticipantBankService {
 
     private final ParticipantBankRepository participantBankRepository;
+    private final org.multimedia.util.FileStorageUtil fileStorageUtil;
 
     @Transactional
     public ParticipantBank createBank(ParticipantBankDto dto) {
@@ -136,5 +137,17 @@ public class ParticipantBankService {
         }
         participantBankRepository.deleteById(id);
         log.info("Successfully deleted participant bank ID: {}", id);
+    }
+
+    @Transactional
+    public ParticipantBank updateBankLogo(Long id, org.springframework.web.multipart.MultipartFile logoFile) {
+        log.info("Updating logo for participant bank ID: {}", id);
+        ParticipantBank bank = getBankById(id);
+        String logoPath = fileStorageUtil.saveLogoFile(bank.getBic(), logoFile);
+        bank.setLogoPath(logoPath);
+        bank.setModifiedBy(1L);
+        ParticipantBank updated = participantBankRepository.save(bank);
+        log.info("Logo updated successfully for bank '{}' (ID: {}): {}", updated.getName(), id, logoPath);
+        return updated;
     }
 }

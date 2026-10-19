@@ -275,4 +275,31 @@ public class ParticipantBankController {
         participantBankService.deleteBank(id);
         return RestResponse.success("successfully Deleted");
     }
+
+    @Operation(
+            summary = "Upload Participant Bank Logo",
+            description = "Uploads a logo image file (PNG, JPG, SVG, WebP) for a participant bank identified by ID, stores it, and updates its profile."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Logo uploaded successfully",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = OperationSuccessResponse.class),
+                            examples = @ExampleObject(
+                                    name = "Success Response",
+                                    value = "{\"success\": \"successfully Uploaded Logo for Commercial Bank of Ethiopia\", \"logoPath\": \"/uploads/logos/CBETETAA_logo.png\"}"
+                            )
+                    )
+            )
+    })
+    @PostMapping(value = "/{id}/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<RestResponse> uploadLogo(
+            @Parameter(description = "Participant bank ID", example = "1") @PathVariable Long id,
+            @Parameter(description = "Logo image file (PNG, JPG, SVG, WebP)") @RequestParam("logo") org.springframework.web.multipart.MultipartFile logo) {
+        log.info("Received request to upload logo for bank ID: {}", id);
+        ParticipantBank updated = participantBankService.updateBankLogo(id, logo);
+        return RestResponse.success("successfully Uploaded Logo for " + updated.getName(), "institution", updated);
+    }
 }

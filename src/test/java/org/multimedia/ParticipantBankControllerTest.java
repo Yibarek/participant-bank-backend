@@ -99,4 +99,30 @@ public class ParticipantBankControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.institutions", hasSize(1)));
     }
+
+    @Test
+    public void testUploadParticipantLogo() throws Exception {
+        ParticipantBank bank = participantBankRepository.save(
+                ParticipantBank.builder()
+                        .name("Awash Bank")
+                        .bic("AWINETAA")
+                        .shortName("AB")
+                        .status("ACTIVE")
+                        .build()
+        );
+
+        org.springframework.mock.web.MockMultipartFile logoFile =
+                new org.springframework.mock.web.MockMultipartFile(
+                        "logo",
+                        "awash_logo.png",
+                        "image/png",
+                        "dummy-png-data".getBytes()
+                );
+
+        mockMvc.perform(multipart("/api/v1/participants/" + bank.getId() + "/logo")
+                        .file(logoFile))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("SUCCESS")))
+                .andExpect(jsonPath("$.institution.logoPath", containsString("AWINETAA_logo.png")));
+    }
 }
