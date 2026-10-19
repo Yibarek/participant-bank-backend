@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: participant-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: acs_participant_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - participant-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: participant-backend
+    restart: unless-stopped
+    ports:
+      - "9081:9081"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/acs_participant_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      CLIENT_PARTICIPANT_LOGOPATH: /uploads/logos/
+    volumes:
+      - ./uploads:/uploads
+      - ./logs:/app/logs
+    depends_on:
+      - postgres
+    networks:
+      - participant-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  participant-network:
+    driver: bridge
