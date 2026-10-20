@@ -76,7 +76,7 @@ public class ParticipantBankControllerTest {
                 .username("admin")
                 .password("Password@123")
                 .grant_type("password")
-                .client_id("participant-portal")
+                .client_id("acs_apis_client_api")
                 .build();
 
         mockMvc.perform(post("/api/v1/auth/login")
@@ -99,7 +99,7 @@ public class ParticipantBankControllerTest {
                 .username("admin")
                 .password("Password@123")
                 .grant_type("password")
-                .client_id("participant-portal")
+                .client_id("acs_apis_client_api")
                 .build();
 
         mockMvc.perform(post("/api/v1/auth/login")

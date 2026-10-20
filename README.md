@@ -37,7 +37,7 @@ Spring Boot backend service for managing Participant Banks and Authentication.
 - **Default Static Credentials**:
   - Username: `admin`
   - Password: `Password@123`
-- **Keycloak Realm**: `http://192.168.20.49:9091/realms/acs` (Client ID: `participant-portal`)
+- **Keycloak Realm**: `http://192.168.20.49:9091/realms/acs` (Client ID: `acs_apis_client_api`)
 
 ---
 

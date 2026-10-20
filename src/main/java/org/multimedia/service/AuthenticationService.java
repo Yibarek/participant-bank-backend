@@ -37,7 +37,7 @@ public class AuthenticationService {
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri:http://192.168.20.49:9091/realms/acs}")
     private String keycloakIssuerUri;
 
-    @Value("${app.keycloak.client-id:participant-portal}")
+    @Value("${app.keycloak.client-id:acs_apis_client_api}")
     private String defaultClientId;
 
     /**
