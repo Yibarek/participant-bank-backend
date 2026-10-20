@@ -39,7 +39,7 @@ public class AuthenticationController {
                     schema = @Schema(implementation = LoginRequest.class),
                     examples = @ExampleObject(
                             name = "Login Example",
-                            value = "{\"username\": \"admin\", \"password\": \"Password@123\", \"grant_type\": \"password\", \"client_id\": \"participant-portal\"}"
+                            value = "{\"username\": \"admin\", \"password\": \"Password@123\", \"grant_type\": \"password\", \"client_id\": \"acs_apis_client_api\"}"
                     )
             )
     )
@@ -76,7 +76,7 @@ public class AuthenticationController {
                     schema = @Schema(implementation = LoginRequest.class),
                     examples = @ExampleObject(
                             name = "Token Request Example",
-                            value = "{\"username\": \"admin\", \"password\": \"Password@123\", \"grant_type\": \"password\", \"client_id\": \"participant-portal\"}"
+                            value = "{\"username\": \"admin\", \"password\": \"Password@123\", \"grant_type\": \"password\", \"client_id\": \"acs_apis_client_api\"}"
                     )
             )
     )

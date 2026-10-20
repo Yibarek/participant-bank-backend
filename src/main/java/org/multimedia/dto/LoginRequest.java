@@ -26,7 +26,7 @@ public class LoginRequest {
     @Builder.Default
     private String grant_type = "password";
 
-    @Schema(description = "Keycloak client ID", example = "participant-portal", defaultValue = "participant-portal")
+    @Schema(description = "Keycloak client ID", example = "acs_apis_client_api", defaultValue = "acs_apis_client_api")
     @Builder.Default
-    private String client_id = "participant-portal";
+    private String client_id = "acs_apis_client_api";
 }
